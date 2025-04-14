@@ -1,0 +1,99 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: GatewayService/Dockerfile
+    ports:
+      - "5100:80"
+    depends_on:
+      - ordering
+      - product
+      - cart
+      - identity
+      - notification
+      - payment
+      - inventory
+      - analytics
+      - email
+      - audit
+
+  ordering:
+    build:
+      context: .
+      dockerfile: OrderingService/Dockerfile
+    ports:
+      - "5101:80"
+
+  product:
+    build:
+      context: .
+      dockerfile: ProductService/Dockerfile
+    ports:
+      - "5102:80"
+
+  cart:
+    build:
+      context: .
+      dockerfile: CartService/Dockerfile
+    ports:
+      - "5103:80"
+
+  identity:
+    build:
+      context: .
+      dockerfile: IdentityService/Dockerfile
+    ports:
+      - "5104:80"
+
+  notification:
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+    ports:
+      - "5105:80"
+
+  payment:
+    build:
+      context: .
+      dockerfile: PaymentService/Dockerfile
+    ports:
+      - "5106:80"
+
+  inventory:
+    build:
+      context: .
+      dockerfile: InventoryService/Dockerfile
+    ports:
+      - "5107:80"
+
+  analytics:
+    build:
+      context: .
+      dockerfile: AnalyticsService/Dockerfile
+    ports:
+      - "5108:80"
+
+  email:
+    build:
+      context: .
+      dockerfile: EmailService/Dockerfile
+    ports:
+      - "5109:80"
+
+  audit:
+    build:
+      context: .
+      dockerfile: AuditService/Dockerfile
+    ports:
+      - "5110:80"
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP (för backend-kommunikation)
+      - "15672:15672"   # Web UI (för att se köer etc.)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
