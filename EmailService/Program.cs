@@ -1,26 +1,24 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using EmailService.Models;
+using EmailService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// Lägg till SMTP-inställningar från appsettings.json
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection("SmtpSettings"));
+
+// Registrera EmailService
+builder.Services.AddScoped<IEmailService, EmailService.Services.EmailService>();
+
+// Swagger och controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapControllers();
 

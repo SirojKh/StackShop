@@ -8,16 +8,16 @@ services:
     ports:
       - "5100:7000"
     depends_on:
-      - ordering
       - product
+      - inventory
+      - ordering
+      - payment
+      - notification
+      - email
+      - analytics
+      - audit
       - cart
       - identity
-      - notification
-      - payment
-      - inventory
-      - analytics
-      - email
-      - audit
 
   product:
     build:
@@ -73,7 +73,7 @@ services:
       context: .
       dockerfile: EmailService/Dockerfile
     ports:
-      - "5108:7008"
+      - "5108:8080"
 
   analytics:
     build:
