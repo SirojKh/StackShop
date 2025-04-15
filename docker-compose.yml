@@ -1,10 +1,12 @@
+version: "3.8"
+
 services:
   gateway:
     build:
       context: .
       dockerfile: GatewayService/Dockerfile
     ports:
-      - "5100:80"
+      - "5100:7000"
     depends_on:
       - ordering
       - product
@@ -17,76 +19,75 @@ services:
       - email
       - audit
 
-  ordering:
-    build:
-      context: .
-      dockerfile: OrderingService/Dockerfile
-    ports:
-      - "5101:80"
-
   product:
     build:
       context: .
       dockerfile: ProductService/Dockerfile
     ports:
-      - "5102:80"
-
-  cart:
-    build:
-      context: .
-      dockerfile: CartService/Dockerfile
-    ports:
-      - "5103:80"
-
-  identity:
-    build:
-      context: .
-      dockerfile: IdentityService/Dockerfile
-    ports:
-      - "5104:80"
-
-  notification:
-    build:
-      context: .
-      dockerfile: NotificationService/Dockerfile
-    ports:
-      - "5105:80"
-
-  payment:
-    build:
-      context: .
-      dockerfile: PaymentService/Dockerfile
-    ports:
-      - "5106:80"
+      - "5101:7001"
 
   inventory:
     build:
       context: .
       dockerfile: InventoryService/Dockerfile
     ports:
-      - "5107:80"
+      - "5102:7002"
 
-  analytics:
+  ordering:
     build:
       context: .
-      dockerfile: AnalyticsService/Dockerfile
+      dockerfile: OrderingService/Dockerfile
     ports:
-      - "5108:80"
+      - "5103:7003"
+
+  cart:
+    build:
+      context: .
+      dockerfile: CartService/Dockerfile
+    ports:
+      - "5104:7004"
+
+  identity:
+    build:
+      context: .
+      dockerfile: IdentityService/Dockerfile
+    ports:
+      - "5105:7005"
+
+  notification:
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+    ports:
+      - "5106:7006"
+
+  payment:
+    build:
+      context: .
+      dockerfile: PaymentService/Dockerfile
+    ports:
+      - "5107:7007"
 
   email:
     build:
       context: .
       dockerfile: EmailService/Dockerfile
     ports:
-      - "5109:80"
+      - "5108:7008"
+
+  analytics:
+    build:
+      context: .
+      dockerfile: AnalyticsService/Dockerfile
+    ports:
+      - "5109:7009"
 
   audit:
     build:
       context: .
       dockerfile: AuditService/Dockerfile
     ports:
-      - "5110:80"
-
+      - "5110:7010"
 
   rabbitmq:
     image: rabbitmq:3-management

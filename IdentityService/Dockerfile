@@ -1,12 +1,13 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 7005
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY IdentityService/IdentityService.csproj IdentityService/
 COPY Shared/Shared.csproj Shared/
 RUN dotnet restore "IdentityService/IdentityService.csproj"
+
 COPY . .
 WORKDIR /src/IdentityService
 RUN dotnet build -c Release -o /app/build

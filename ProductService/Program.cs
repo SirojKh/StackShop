@@ -5,41 +5,28 @@ using ProductService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 👇 Lägg detta direkt efter CreateBuilder
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(80); // Matchar EXPOSE 80 i Dockerfile
-});
-
-// =============================================
-// Services – Dependency Injection
-// =============================================
+// Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DbContext med InMemory-databas (byt till UseSqlServer vid behov)
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseInMemoryDatabase("ProductDb"));
 
-// Registrera tjänster
 builder.Services.AddScoped<IProductService, ProductService.Services.ProductService>();
 
 var app = builder.Build();
 
-// =============================================
-// Middleware-pipeline
-// =============================================
-
+// Seed testdata
 DbInitializer.Seed(app);
 
-// Swagger & middleware – alltid aktiv
+// Middleware
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
 app.MapControllers();
 
-app.Run();
+// Kör på port 7001
+app.Run("http://0.0.0.0:7001");
