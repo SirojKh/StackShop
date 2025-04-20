@@ -1,10 +1,10 @@
-namespace OrderingService.Models;
-
-public class Order
+namespace OrderingService.Models
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid ProductId { get; set; }
-    public Guid UserId { get; set; }
-    public int Quantity { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public class Order
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<OrderItem> Items { get; set; } = new();
+    }
 }

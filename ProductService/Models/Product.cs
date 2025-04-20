@@ -1,3 +1,5 @@
+using System;
+
 namespace ProductService.Models;
 
 public class Product

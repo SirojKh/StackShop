@@ -1,3 +1,5 @@
+using System;
+
 namespace CartService.Models;
 
 public class CartItem

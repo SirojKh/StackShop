@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using InventoryService.Data;
 using InventoryService.Interfaces;
 using InventoryService.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 

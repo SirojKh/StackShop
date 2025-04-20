@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace CartService.Models;
 
 public class Cart

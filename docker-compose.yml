@@ -39,6 +39,8 @@ services:
       dockerfile: OrderingService/Dockerfile
     ports:
       - "5103:7003"
+    environment:
+      JwtSettings__Key: "N9lXSxLlfCDbhvAwsyD0qaeWsTjl6Ot7wCAe82WqhAfR0fWHqkLAiN0gaEKi7J7QjiQofRkycbJDqdB5ZhuEIQ=="
 
   cart:
     build:
@@ -52,7 +54,12 @@ services:
       context: .
       dockerfile: IdentityService/Dockerfile
     ports:
-      - "5105:7005"
+      - "5105:7005"  
+    environment:
+      JwtSettings__Key: "N9lXSxLlfCDbhvAwsyD0qaeWsTjl6Ot7wCAe82WqhAfR0fWHqkLAiN0gaEKi7J7QjiQofRkycbJDqdB5ZhuEIQ=="
+      JwtSettings__Issuer: "StackShop.Identity"
+      JwtSettings__Audience: "StackShop.Users"
+      JwtSettings__ExpiryMinutes: "60"
 
   notification:
     build:
@@ -60,6 +67,11 @@ services:
       dockerfile: NotificationService/Dockerfile
     ports:
       - "5106:7006"
+      
+    depends_on:
+      - rabbitmq
+      - email
+    restart: unless-stopped
 
   payment:
     build:

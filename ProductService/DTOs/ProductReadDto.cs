@@ -1,3 +1,5 @@
+using System;
+
 namespace ProductService.DTOs;
 
 public class ProductReadDto

@@ -1,23 +1,27 @@
+using System;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using NotificationService.Messaging;
-using NotificationService.Messaging.DTOs;
 using NotificationService.Models;
 using NotificationService.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-
-namespace NotificationService.Consumers;
+using Shared.Contracts.Events;
 
 public class OrderCreatedConsumer : BackgroundService
 {
     private readonly INotificationService _notificationService;
+    private readonly IEmailClient _emailClient;
     private IConnection? _connection;
     private IModel? _channel;
 
-    public OrderCreatedConsumer(INotificationService notificationService)
+    public OrderCreatedConsumer(INotificationService notificationService, IEmailClient emailClient)
     {
         _notificationService = notificationService;
+        _emailClient = emailClient;
         InitRabbitMQ();
     }
 
@@ -25,7 +29,6 @@ public class OrderCreatedConsumer : BackgroundService
     {
         var factory = new ConnectionFactory { HostName = "rabbitmq" };
 
-        // Försök ansluta med retry (kan ta några sekunder innan RabbitMQ är redo)
         const int maxRetries = 5;
         int retries = 0;
         while (retries < maxRetries)
@@ -66,6 +69,8 @@ public class OrderCreatedConsumer : BackgroundService
 
             if (orderEvent != null)
             {
+                Console.WriteLine($"[NotificationService] Mottagit OrderCreatedEvent. OrderId: {orderEvent.OrderId}");
+
                 var notification = new NotificationMessage
                 {
                     Type = "OrderCreated",
@@ -73,16 +78,38 @@ public class OrderCreatedConsumer : BackgroundService
                     Content = $"Order {orderEvent.OrderId} has been created.",
                     Timestamp = DateTime.UtcNow
                 };
-                await _notificationService.SendNotificationAsync(notification);
+
+                // Logga innan vi skickar e-post
+                Console.WriteLine($"[NotificationService] Försöker skicka e-post till: {orderEvent.UserEmail}");
+
+                try
+                {
+                    await _emailClient.SendEmailAsync(new EmailMessage
+                    {
+                        To = orderEvent.UserEmail,
+                        Subject = "Your Order Has Been Created",
+                        Body = $"Your order {orderEvent.OrderId} has been created successfully."
+                    });
+                    Console.WriteLine("[NotificationService] E-post skickades.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[NotificationService] Ett fel uppstod när e-post skickades: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[NotificationService] Fel: OrderCreatedEvent var null.");
             }
         };
 
         _channel.BasicConsume(queue: EventBusConstants.OrderCreatedQueue,
-                              autoAck: true,
-                              consumer: consumer);
+            autoAck: true,
+            consumer: consumer);
 
         return Task.CompletedTask;
     }
+
 
     public override void Dispose()
     {

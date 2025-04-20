@@ -1,3 +1,5 @@
+using System;
+
 namespace NotificationService.Models;
 
 public class NotificationMessage
