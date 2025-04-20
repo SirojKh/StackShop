@@ -36,9 +36,22 @@ public class OrdersController : ControllerBase
     }
 
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Order order)
     {
+        // 🔐 Hämta UserId från JWT-token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized("Ogiltigt eller saknat användar-id i token.");
+        }
+
+        //Sätt UserId på ordern från token
+        order.UserId = userId;
+
+        //Validering
         if (!ModelState.IsValid)
         {
             foreach (var key in ModelState.Keys)
@@ -60,6 +73,7 @@ public class OrdersController : ControllerBase
         var createdOrder = await _orderService.CreateOrderAsync(order);
         return CreatedAtAction(nameof(GetById), new { id = createdOrder.Id }, createdOrder);
     }
+
 
 
 

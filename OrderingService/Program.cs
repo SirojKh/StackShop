@@ -47,6 +47,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddHttpClient<IAuditLogger, AuditHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://audit:7010");
+});
+
 // In-memory DB
 builder.Services.AddDbContext<OrderDbContext>(opt =>
     opt.UseInMemoryDatabase("OrdersDb"));

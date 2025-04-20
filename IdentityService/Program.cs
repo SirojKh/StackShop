@@ -1,6 +1,7 @@
 using IdentityService.Data;
 using IdentityService.Interfaces;
 using IdentityService.Jwt;
+using IdentityService.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -22,6 +23,11 @@ builder.Services.AddDbContext<IdentityDbContext>(opt =>
     opt.UseInMemoryDatabase("IdentityDb"));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddHttpClient<IAuditLogger, AuditHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://audit:7010");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

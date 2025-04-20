@@ -11,12 +11,14 @@ public class OrderService : IOrderService
     private readonly OrderDbContext _context;
     private readonly IRabbitMqPublisher _publisher;
     private readonly ILogger<OrderService> _logger;
+    private readonly IAuditLogger _audit;
 
-    public OrderService(OrderDbContext context, IRabbitMqPublisher publisher, ILogger<OrderService> logger)
+    public OrderService(OrderDbContext context, IRabbitMqPublisher publisher, ILogger<OrderService> logger, IAuditLogger audit)
     {
         _context = context;
         _publisher = publisher;
         _logger = logger;
+        _audit = audit;
     }
 
 
@@ -55,14 +57,22 @@ public class OrderService : IOrderService
 
             _logger.LogInformation("Order skapad och skickad till queue med ID: {OrderId}", order.Id);
 
+            //Logga till AuditService
+            await _audit.LogAsync("OrderCreated", order.UserId.ToString(), $"Order {order.Id} skapad.");
+
             return order;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ett fel inträffade vid skapande av order.");
-            throw; // kasta vidare så du ser 500 i Swagger/dockers loggar
+
+            //Logga även fel till AuditService
+            await _audit.LogAsync("OrderError", order.UserId.ToString(), $"Fel vid order: {ex.Message}");
+
+            throw;
         }
     }
+
 
 
 
