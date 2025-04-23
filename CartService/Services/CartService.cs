@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CartService.Data;
+using CartService.Interfaces;
 using CartService.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +12,14 @@ namespace CartService.Services;
 public class CartService : ICartService
 {
     private readonly CartDbContext _context;
+    private readonly IAuditLogger _audit;
+    private readonly IAnalyticsLogger _analytics;
 
-    public CartService(CartDbContext context)
+    public CartService(CartDbContext context, IAuditLogger audit, IAnalyticsLogger analytics)
     {
         _context = context;
+        _audit = audit;
+        _analytics = analytics;
     }
 
     public async Task<Cart?> GetCartAsync(Guid userId)
@@ -43,6 +49,13 @@ public class CartService : ICartService
         }
 
         await _context.SaveChangesAsync();
+
+        await _audit.LogAsync("CartItemAdded", userId.ToString(), $"Produkt {productId} x{quantity} lades till.");
+        await _analytics.LogAsync("CartItemAdded", userId.ToString(), JsonSerializer.Serialize(new
+        {
+            productId,
+            quantity
+        }));
     }
 
     public async Task RemoveItemAsync(Guid userId, Guid productId)
@@ -65,5 +78,8 @@ public class CartService : ICartService
 
         cart.Items.Clear();
         await _context.SaveChangesAsync();
+
+        await _audit.LogAsync("CartCleared", userId.ToString(), "Kundvagn tömd.");
+        await _analytics.LogAsync("CartCleared", userId.ToString(), null);
     }
 }

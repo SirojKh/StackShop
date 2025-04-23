@@ -17,6 +17,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("me")]
+    [Authorize]
     public IActionResult Me()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
@@ -29,7 +30,16 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var user = await _authService.RegisterAsync(request.Email, request.Password);
-        if (user == null) return BadRequest("Email already registered.");
+
+        if (user == null)
+        {
+            return BadRequest(new
+            {
+                error = "E-postadressen är redan registrerad.",
+                email = request.Email
+            });
+        }
+
         return Ok(user);
     }
 
@@ -37,7 +47,16 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var token = await _authService.LoginAsync(request.Email, request.Password);
-        if (token == null) return Unauthorized("Invalid credentials.");
+
+        if (token == null)
+        {
+            return Unauthorized(new
+            {
+                error = "Ogiltiga inloggningsuppgifter.",
+                email = request.Email
+            });
+        }
+
         return Ok(new { token });
     }
 }

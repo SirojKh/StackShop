@@ -2,8 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using CartService.Data;
 using CartService.Interfaces;
 using CartService.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +13,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CartDbContext>(options =>
     options.UseInMemoryDatabase("Carts"));
 
+// Loggning till AuditService
 builder.Services.AddHttpClient<IAuditLogger, AuditHttpClient>(client =>
 {
     client.BaseAddress = new Uri("http://audit:7010");
 });
 
+// Loggning till AnalyticsService
+builder.Services.AddHttpClient<IAnalyticsLogger, AnalyticsHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://analytics:7009");
+});
+
+// Koppling till OrderingService
 builder.Services.AddHttpClient<IOrderClient, OrderHttpClient>(client =>
 {
     client.BaseAddress = new Uri("http://ordering:7003");

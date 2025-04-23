@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// JWT-inställningar
 var jwtSettings = new JwtSettings
 {
     Key = builder.Configuration["JwtSettings:Key"] ?? throw new Exception("JWT key missing!"),
@@ -14,24 +15,30 @@ var jwtSettings = new JwtSettings
     Audience = builder.Configuration["JwtSettings:Audience"] ?? "StackShop.Users",
     ExpiryMinutes = int.TryParse(builder.Configuration["JwtSettings:ExpiryMinutes"], out var minutes) ? minutes : 60
 };
-builder.Services.AddSingleton(jwtSettings);
 
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddSingleton<JwtTokenGenerator>();
 
+// Databas
 builder.Services.AddDbContext<IdentityDbContext>(opt =>
     opt.UseInMemoryDatabase("IdentityDb"));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// HTTP-klienter för Audit + Analytics
 builder.Services.AddHttpClient<IAuditLogger, AuditHttpClient>(client =>
 {
     client.BaseAddress = new Uri("http://audit:7010");
 });
 
+builder.Services.AddHttpClient<IAnalyticsLogger, AnalyticsHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://analytics:7009");
+});
+
+// Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -59,7 +66,6 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
