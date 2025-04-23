@@ -4,12 +4,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using NotificationService.Interfaces;
 using NotificationService.Messaging;
 using NotificationService.Models;
 using NotificationService.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.Contracts.Events;
+using Shared.Contracts.Interfaces;
 
 public class OrderCreatedConsumer : BackgroundService
 {
@@ -17,13 +19,18 @@ public class OrderCreatedConsumer : BackgroundService
     private readonly IEmailClient _emailClient;
     private IConnection? _connection;
     private IModel? _channel;
+    private readonly IAuditLogger _auditLogger;
+    private readonly IAnalyticsLogger _analytics;
 
-    public OrderCreatedConsumer(INotificationService notificationService, IEmailClient emailClient)
+    public OrderCreatedConsumer(INotificationService notificationService, IEmailClient emailClient, IAuditLogger auditLogger, IAnalyticsLogger analytics)
     {
+        _analytics = analytics;
         _notificationService = notificationService;
         _emailClient = emailClient;
+        _auditLogger = auditLogger;
         InitRabbitMQ();
     }
+
 
     private void InitRabbitMQ()
     {
@@ -91,6 +98,10 @@ public class OrderCreatedConsumer : BackgroundService
                         Body = $"Your order {orderEvent.OrderId} has been created successfully."
                     });
                     Console.WriteLine("[NotificationService] E-post skickades.");
+
+                    // Logga till AuditService
+                    await _auditLogger.LogAsync("EmailSent", orderEvent.UserId.ToString(),
+                        $"E-post skickades till {orderEvent.UserEmail} (OrderId: {orderEvent.OrderId})");
                 }
                 catch (Exception ex)
                 {

@@ -1,7 +1,9 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using NotificationService.Interfaces;
 using NotificationService.Services;
+using Shared.Contracts.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,16 @@ builder.Services.AddScoped<INotificationService, NotificationService.Services.No
 builder.Services.AddHttpClient<IEmailClient, EmailClient>(client =>
 {
     client.BaseAddress = new Uri("http://email:8080");
+});
+
+builder.Services.AddHttpClient<IAuditLogger, AuditHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://audit:7010");
+});
+
+builder.Services.AddHttpClient<IAnalyticsLogger, AnalyticsHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("http://analytics:7009");
 });
 
 builder.Services.AddHostedService<OrderCreatedConsumer>();

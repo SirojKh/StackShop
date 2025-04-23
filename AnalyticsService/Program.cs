@@ -1,27 +1,20 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using AnalyticsService.Interfaces;
+using AnalyticsService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IAnalyticsService, AnalyticsService.Services.AnalyticsService>();
+
 var app = builder.Build();
 
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
-app.Run();
+app.Run("http://0.0.0.0:7009");
